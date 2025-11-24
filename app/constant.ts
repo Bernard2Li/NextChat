@@ -459,6 +459,7 @@ export const KnowledgeCutOffDate: Record<string, string> = {
   "gemini-pro-vision": "2023-12",
   "deepseek-chat": "2024-07",
   "deepseek-coder": "2024-07",
+  "deepseek-v3-1-terminus": "2024-12",
 };
 
 export const DEFAULT_TTS_ENGINE = "OpenAI-TTS";
@@ -493,7 +494,7 @@ export const VISION_MODEL_REGEXES = [
   /o3/,
   /o4-mini/,
   /grok-4/i,
-  /gpt-5/
+  /gpt-5/,
 ];
 
 export const EXCLUDE_VISION_MODEL_REGEXES = [/claude-3-5-haiku-20241022/];
@@ -561,7 +562,7 @@ const googleModels = [
   "gemini-2.0-pro-exp",
   "gemini-2.0-pro-exp-02-05",
   "gemini-2.5-pro-preview-06-05",
-  "gemini-2.5-pro"
+  "gemini-2.5-pro",
 ];
 
 const anthropicModels = [
@@ -650,7 +651,12 @@ const iflytekModels = [
   "4.0Ultra",
 ];
 
-const deepseekModels = ["deepseek-chat", "deepseek-coder", "deepseek-reasoner"];
+const deepseekModels = [
+  "deepseek-chat",
+  "deepseek-coder",
+  "deepseek-reasoner",
+  "deepseek-v3-1-terminus",
+];
 
 const xAIModes = [
   "grok-beta",
@@ -880,12 +886,20 @@ export const DEFAULT_MODELS = [
     name,
     available: true,
     sorted: seq++,
-    provider: {
-      id: "deepseek",
-      providerName: "DeepSeek",
-      providerType: "deepseek",
-      sorted: 13,
-    },
+    provider:
+      name === "deepseek-v3-1-terminus"
+        ? {
+            id: "bytedance",
+            providerName: "ByteDance",
+            providerType: "bytedance",
+            sorted: 5,
+          }
+        : {
+            id: "deepseek",
+            providerName: "DeepSeek",
+            providerType: "deepseek",
+            sorted: 13,
+          },
   })),
   ...siliconflowModels.map((name) => ({
     name,
