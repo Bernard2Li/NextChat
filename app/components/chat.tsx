@@ -579,7 +579,14 @@ export function ChatActions(props: {
 
     // if current model is not available
     // switch to first available model
-    const isUnavailableModel = !models.some((m) => m.name === currentModel);
+    const isUnavailableModel = !models.some(
+      (m) =>
+        m.name === currentModel &&
+        (m?.provider?.providerName === currentProviderName ||
+          m?.provider?.id === currentProviderName.toLowerCase() ||
+          m?.provider?.providerName?.toLowerCase() ===
+            currentProviderName?.toLowerCase()),
+    );
     if (isUnavailableModel && models.length > 0) {
       // show next model to default model if exist
       let nextModel = models.find((model) => model.isDefault) || models[0];
@@ -589,7 +596,7 @@ export function ChatActions(props: {
           ?.providerName as ServiceProvider;
       });
       showToast(
-        nextModel?.provider?.providerName == "ByteDance"
+        nextModel?.provider?.providerName?.toLowerCase() === "bytedance"
           ? nextModel.displayName
           : nextModel.name,
       );
@@ -693,18 +700,33 @@ export function ChatActions(props: {
             onClose={() => setShowModelSelector(false)}
             onSelection={(s) => {
               if (s.length === 0) return;
+              console.log("选择的模型值:", s[0]);
               const [model, providerName] = getModelProvider(s[0]);
+              console.log("解析后的模型:", model, "提供商:", providerName);
               chatStore.updateTargetSession(session, (session) => {
+                console.log(
+                  "切换前 - 模型:",
+                  session.mask.modelConfig.model,
+                  "提供商:",
+                  session.mask.modelConfig.providerName,
+                );
                 session.mask.modelConfig.model = model as ModelType;
                 session.mask.modelConfig.providerName =
                   providerName as ServiceProvider;
                 session.mask.syncGlobalConfig = false;
+                console.log(
+                  "切换后 - 模型:",
+                  session.mask.modelConfig.model,
+                  "提供商:",
+                  session.mask.modelConfig.providerName,
+                );
               });
-              if (providerName == "ByteDance") {
+              if (providerName?.toLowerCase() === "bytedance") {
                 const selectedModel = models.find(
                   (m) =>
-                    m.name == model &&
-                    m?.provider?.providerName == providerName,
+                    m.name === model &&
+                    m?.provider?.providerName?.toLowerCase() ===
+                      providerName?.toLowerCase(),
                 );
                 showToast(selectedModel?.displayName ?? "");
               } else {

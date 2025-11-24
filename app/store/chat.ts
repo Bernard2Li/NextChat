@@ -145,7 +145,13 @@ function getSummarizeModel(
   if (currentModel.startsWith("gemini")) {
     return [GEMINI_SUMMARIZE_MODEL, ServiceProvider.Google];
   } else if (currentModel.startsWith("deepseek-")) {
-    return [DEEPSEEK_SUMMARIZE_MODEL, ServiceProvider.DeepSeek];
+    if (providerName.includes(ServiceProvider.ByteDance)) {
+      return [currentModel, ServiceProvider.ByteDance];
+    } else {
+      // 不要强制将所有 deepseek 模型替换为 deepseek-chat
+      // 只在需要摘要时使用 DEEPSEEK_SUMMARIZE_MODEL，正常聊天保留原始模型
+      return [currentModel, ServiceProvider.DeepSeek];
+    }
   }
 
   return [currentModel, providerName];
@@ -411,6 +417,10 @@ export const useChatStore = createPersistStore(
       ) {
         const session = get().currentSession();
         const modelConfig = session.mask.modelConfig;
+        console.log(
+          "[当前API提供商] ",
+          modelConfig.providerName || "默认OpenAI",
+        );
 
         // MCP Response no need to fill template
         let mContent: string | MultimodalContent[] = isMcpResponse

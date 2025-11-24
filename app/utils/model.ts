@@ -17,7 +17,7 @@ const CustomSeq = {
 
 const customProvider = (providerName: string) => ({
   id: providerName.toLowerCase(),
-  providerName: providerName,
+  providerName: providerName.toLowerCase(),
   providerType: "custom",
   sorted: CustomSeq.next(providerName),
 });
@@ -102,7 +102,7 @@ export function collectModelTable(
             count += 1;
             modelTable[fullName]["available"] = available;
             // swap name and displayName for bytedance
-            if (providerName === "bytedance") {
+            if (providerName?.toLowerCase() === "bytedance") {
               [name, displayName] = [displayName, modelName];
               modelTable[fullName]["name"] = name;
             }
@@ -118,7 +118,10 @@ export function collectModelTable(
             customProviderName || customModelName,
           );
           // swap name and displayName for bytedance
-          if (displayName && provider.providerName == "ByteDance") {
+          if (
+            displayName &&
+            provider.providerName?.toLowerCase() === "bytedance"
+          ) {
             [customModelName, displayName] = [displayName, customModelName];
           }
           modelTable[`${customModelName}@${provider?.id}`] = {
@@ -245,14 +248,31 @@ export function isModelNotavailableInServer(
   const providerNamesArray = Array.isArray(providerNames)
     ? providerNames
     : [providerNames];
+
+  // 首先尝试使用完整模型名检查（模型名@提供商名小写）
   for (const providerName of providerNamesArray) {
-    // if model provider is bytedance, use model config name to check if not avaliable
-    if (providerName === ServiceProvider.ByteDance) {
-      return !Object.values(modelTable).filter((v) => v.name === modelName)?.[0]
-        ?.available;
-    }
     const fullName = `${modelName}@${providerName.toLowerCase()}`;
     if (modelTable?.[fullName]?.available === true) return false;
   }
+
+  // 如果完整模型名检查失败，对于ByteDance提供商，使用模型名过滤检查
+  for (const providerName of providerNamesArray) {
+    if (
+      providerName?.toLowerCase() === ServiceProvider.ByteDance.toLowerCase()
+    ) {
+      const byteDanceModels = Object.values(modelTable).filter(
+        (v) =>
+          v.name === modelName &&
+          v?.provider?.id?.toLowerCase() === "bytedance",
+      );
+      if (
+        byteDanceModels.length > 0 &&
+        byteDanceModels[0]?.available === true
+      ) {
+        return false;
+      }
+    }
+  }
+
   return true;
 }
